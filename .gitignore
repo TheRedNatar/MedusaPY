@@ -130,3 +130,5 @@ dmypy.json
 
 # CUSTOM
 models/
+trained_models/
+resources/train_data*

@@ -18,9 +18,17 @@ def load(path_to_model_1, path_to_model_n):
 
 
 def predict(models, X):
+    if X == []:
+        return []
+
     X_1, X_n = _split(X)
-    predictions_1 = _predict(models["model_1"], "model_1", medusa_model_1.prepare_row, X_1)
-    predictions_n = _predict(models["model_n"], "model_n", medusa_model_n.prepare_row, X_n)
+    predictions_1, predictions_n = [], []
+
+    if X_1 != []:
+        predictions_1 = _predict(models["model_1"], "model_1", medusa_model_1.prepare_row, X_1)
+    if X_n != []:
+        predictions_n = _predict(models["model_n"], "model_n", medusa_model_n.prepare_row, X_n)
+
     return predictions_1 + predictions_n
 
 
@@ -41,38 +49,29 @@ def _split(X):
     return (X_1, X_n)
 
 def _predict(model, model_name, prepare_row, raw_X):
-    if raw_X == []:
-        return []
-
     df = pd.DataFrame([prepare_row(x) for x in raw_X])
     pids = list(df["player_id"].values)
     X = df.drop(columns=["player_id"]).values
-    # preds, preds_proba, preds_log_proba = _pred(model, X)
     preds, preds_proba = _pred(model, X)
-    predictions = ["Inactive" if pred is True else "Active" for pred in preds]
-    p_inactive, p_active = list(zip(*preds_proba))
-    pack = zip([model_name]*len(predictions), pids, list(predictions), p_inactive, p_active)
+    inactive_index = _get_inactive_index(model)
+    probs = list(zip(*preds_proba))
+    pack = zip([model_name]*len(preds.tolist()), pids, preds.tolist(), probs[inactive_index])
     return list(pack)
+
+
+def _get_inactive_index(model):
+    one, two = model.classes_
+    if one is True:
+        return 0
+    else:
+        return 1
+
 
 def _pred(model, X):
     preds_proba = model.predict_proba(X)
-    # preds_log_proba = _predict_log_proba(model, preds_proba)
     preds = _predict_normal(model, preds_proba)
-    # return (preds, preds_proba, preds_log_proba)
     return (preds, preds_proba)
 
-
-
-def _predict_log_proba(model, proba):
-    
-    if model.n_outputs_ == 1:
-        return np.log(proba)
-    
-    else:
-        for k in range(model.n_outputs_):
-            proba[k] = np.log(proba[k])
-            
-        return proba
 
 def _predict_normal(model, proba):
 
@@ -91,6 +90,3 @@ def _predict_normal(model, proba):
             )
 
         return predictions
-
-
-
