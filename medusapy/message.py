@@ -29,7 +29,5 @@ def read_message(PACKET_BYTES=4, PACKET_FORMAT=">i"):
 def write_answer(answer, PACKET_BYTES=4, PACKET_FORMAT=">i"):
     data = json.dumps(answer).encode()
     packet = pack(PACKET_FORMAT, len(data)) + data
-    # raise Exception(packet)
     sys.stdout.buffer.write(packet)
     sys.stdout.buffer.flush()
-    # raise Exception("mandado")

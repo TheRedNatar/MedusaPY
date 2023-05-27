@@ -5,7 +5,7 @@ from medusapy import medusa
 
 
 if __name__ == "__main__":
-    models = medusa.load(sys.argv[1], sys.argv[2])
+    model = medusa.load(sys.argv[1])
 
     while True:
         try:
@@ -16,5 +16,5 @@ if __name__ == "__main__":
             if message == []:
                 write_answer([])
             else:
-                answer = medusa.predict(models, message)
+                answer = medusa.predict(model, message)
                 write_answer(answer)
